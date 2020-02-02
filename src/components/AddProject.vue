@@ -3,8 +3,8 @@
     <div>
         <b-form @submit.prevent="addProject" style="max-width: 750px; margin: 20px auto">
             <!-- No idea why it is not shown without "show" attribute -->
-            <b-alert show="true" variant="danger" v-if="false">
-                Wrong Credentials
+            <b-alert show="true" variant="danger" v-if="addProjectError">
+                Error !
             </b-alert>
 
             <b-form-group
@@ -43,8 +43,10 @@
             >
                 <multiselect
                         v-model="form.tags"
-                        :options="items"
+                        :options="availableTags"
                         :multiple="true"
+                        track-by="name"
+                        label="name"
                 />
             </b-form-group>
 
@@ -76,7 +78,7 @@
                             min="0"
                             step="0.01"
                             placeholder="USD"
-                            v-model="form.payment.lowerBound"
+                            v-model="form.paymentLowerBound"
                     ></b-form-input>
                     <label style="margin: 5px 10px;">to</label>
                     <b-form-input
@@ -85,7 +87,7 @@
                             type="number"
                             min="0"
                             step="0.01"
-                            v-model="form.payment.upperBound"
+                            v-model="form.paymentUpperBound"
                     ></b-form-input>
                 </b-input-group-append>
                 <small>A zero value will be considered as unspecified. At least one payment amount (lower or upper bound) must be turned in.</small>
@@ -97,7 +99,10 @@
 </template>
 
 <script>
-    import {addProject} from "@/service/api";
+    import {
+        addProject,
+        getTagsRequest
+    } from "@/service/api";
     import {Multiselect} from "vue-multiselect";
 
     export default {
@@ -107,41 +112,62 @@
 
         data: () => {
             return {
-                items: ['Dragos e flael', 'MySQL', 'Oracle', 'MongoDB', 'PostgreSQL'],
+                availableTags: [],
 
                 form: {
                     name: '',
                     description: '',
                     tags: [],
                     endDate: '',
-                    payment: {
-                        upperBound: 0,
-                        lowerBound: 0
-                    }
+                    paymentLowerBound: 0,
+                    paymentUpperBound: 0
                 },
 
                 config: {
                 },
 
-                editor: null
+                editor: null,
+                addProjectError: false
             }
         },
 
         methods: {
             addProject() {
-                // eslint-disable-next-line no-console
+                this.addProjectError = false;
+                const {
+                    name,
+                    description,
+                    tags,
+                    endDate,
+                    paymentLowerBound,
+                    paymentUpperBound
+                } = this.form;
+
                 addProject({
-                    ...this.form
+                    name,
+                    description,
+                    tags,
+                    endDate,
+                    paymentLowerBound,
+                    paymentUpperBound
                 }, (res, err) => {
                     if (err == null) {
                         this.$router.push('/view_project/' + res.data.id);
                     } else {
                         // eslint-disable-next-line no-console
-                        console.log("yay");
+                        this.addProjectError = true;
                     }
                 })
             }
         },
+
+        mounted() {
+            getTagsRequest((res, err) => {
+               if (err == null) {
+                   this.availableTags = res.data;
+               }
+            });
+        }
     }
 </script>
 

@@ -19,7 +19,7 @@
 
                     <b-nav-item-dropdown right v-if="isLoggedIn">
                         <template v-slot:button-content>
-                            {{loggedInUser.name}}
+                            {{loggedInUsername}}
                         </template>
                         <b-dropdown-item @click="logOut">Log Out</b-dropdown-item>
                     </b-nav-item-dropdown>
@@ -34,13 +34,16 @@
         name: "Header",
 
         data: () => ({
-            isLoggedIn: localStorage.user && JSON.parse(localStorage.user) != null,
-            loggedInUser: localStorage.user && JSON.parse(localStorage.user),
+            isLoggedIn: typeof localStorage.username !== "undefined",
+            loggedInUsername: localStorage.username,
         }),
 
         methods: {
             logOut: () => {
-                delete localStorage.user;
+                delete localStorage.accessToken;
+                delete localStorage.refreshToken;
+                delete localStorage.expirationDate;
+                delete localStorage.username;
                 document.location.href = '/';
             }
         }

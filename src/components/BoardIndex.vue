@@ -26,7 +26,7 @@
 
         data: () => {
             return {
-                isLoggedIn: localStorage.user && JSON.parse(localStorage.user) != null,
+                isLoggedIn: localStorage.username && JSON.parse(localStorage.username) != null,
             }
         },
     }

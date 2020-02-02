@@ -7,6 +7,7 @@ import BoardIndex from "@/components/BoardIndex";
 import AddProject from "@/components/AddProject";
 import Projects from "@/components/Projects";
 import ProjectDetails from "@/components/ProjectDetails";
+import AccountActivation from "@/components/AccountActivation";
 
 Vue.use(Router);
 
@@ -43,6 +44,12 @@ export default new Router({
             name: 'view_project',
             component: ProjectDetails
         },
+
+        {
+            path: '/activate_account',
+            name: 'activate_account',
+            component: AccountActivation
+        }
 
     ]
 })

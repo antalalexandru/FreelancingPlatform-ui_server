@@ -4,21 +4,19 @@
             <b-spinner style="width: 3rem; height: 3rem; margin: 50px;" label="Large Spinner" variant="secondary"></b-spinner>
         </div>
         <div v-else>
-            <b-row>
-                <b-col md="8" sm="12">
                     <h1 style="margin: 10px 0;">{{projectDetails.name}}</h1>
                     <!-- Author -->
                     <p class="lead">
-                        offer submitted by
+                        project submitted by
                         <!-- TODO remove link, replace with user details component -->
-                        <a href="#">{{ projectDetails.author.name }}</a>
+                        <a href="#">{{ projectDetails.author.username }}</a>
                     </p>
 
                     <hr>
 
                     <!-- Date/Time https://www.npmjs.com/package/vue-filter-date-format -->
                     <p>
-                        Posted on {{ new Date(projectDetails.submitted * 1000) | dateFormat('DD MMMM YYYY') }}, registrations open until {{ new Date(projectDetails.endDate * 1000) | dateFormat('DD MMMM YYYY') }}</p>
+                        Posted on {{ new Date(projectDetails.submitted) | dateFormat('DD MMMM YYYY') }}, registrations open until {{ new Date(projectDetails.endDate) | dateFormat('DD MMMM YYYY') }}</p>
                     <hr>
 
                     <div v-html="projectDetails.description"></div>
@@ -27,14 +25,26 @@
                     <div v-if="projectDetails.tags.length" style="margin-top: 10px;">
                         <b-badge variant="secondary"
                                  v-for="tag in projectDetails.tags"
-                                 v-bind:key="tag"
+                                 v-bind:key="tag.name"
                                  style="margin-right: 5px;"
                         >
-                            {{tag}}
+                            {{tag.name}}
                         </b-badge>
                     </div>
 
                     <hr>
+
+                    <div class="card my-4">
+                        <h5 class="card-header">Place a Bid on this Project</h5>
+                        <div class="card-body">
+                            <form>
+                                <div class="form-group">
+                                    <textarea placeholder="What makes you the best candidate for this project?" class="form-control" rows="3"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Submit offer</button>
+                            </form>
+                        </div>
+                    </div>
 
                     <!-- Single Comment -->
                     <div class="media mb-4">
@@ -71,40 +81,6 @@
                         </div>
                     </div>
 
-                </b-col>
-                <b-col md="4" sm="12">
-                    <!-- Search Widget -->
-                    <div class="card my-4">
-                        <h5 class="card-header">Search</h5>
-                        <div class="card-body">
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Search for...">
-                                <span class="input-group-btn">
-                <button class="btn btn-secondary" type="button">Go!</button>
-              </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Categories Widget -->
-                    <div class="card my-4">
-                        <h5 class="card-header">Categories</h5>
-                        <div class="card-body">
-                            <div class="row">
-                                121
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Side Widget -->
-                    <div class="card my-4">
-                        <h5 class="card-header">Side Widget</h5>
-                        <div class="card-body">
-                            You can put anything you want inside of these side widgets. They are easy to use, and feature the new Bootstrap 4 card containers!
-                        </div>
-                    </div>
-                </b-col>
-            </b-row>
         </div>
     </div>
 </template>

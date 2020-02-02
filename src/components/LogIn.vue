@@ -8,15 +8,15 @@
 
             <b-form-group
                     id="input-group-1"
-                    label="Email address:"
+                    label="Username:"
                     label-for="input-1"
             >
                 <b-form-input
                         id="input-1"
-                        v-model="email"
-                        type="email"
+                        v-model="username"
+                        type="text"
                         required
-                        placeholder="Enter email"
+                        placeholder="Enter username"
                 ></b-form-input>
             </b-form-group>
 
@@ -51,7 +51,7 @@
         name: "LogIn",
         data: () => {
             return {
-                email: '',
+                username: '',
                 password: '',
 
                 wrongCredentials: false,
@@ -62,11 +62,15 @@
             login () {
                 this.wrongCredentials = false;
                 login({
-                    email: this.email,
+                    username: this.username,
                     password: this.password
                 }, (res, err) => {
                     if (err == null) {
-                        localStorage.user = JSON.stringify(res.data);
+                        localStorage.accessToken = res.data['access_token'];
+                        localStorage.refreshToken = res.data['refresh_token'];
+                        localStorage.expirationDate = new Date().getTime() + 1000 * res.data['expires_in'];
+                        localStorage.username = this.username;
+
                         document.location.href = '/';
                     } else {
                         this.wrongCredentials = true;

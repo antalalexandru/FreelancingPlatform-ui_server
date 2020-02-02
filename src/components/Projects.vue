@@ -58,6 +58,17 @@
                 Exclude closed projects
             </b-form-checkbox>
 
+            <hr>
+
+            <b-form-checkbox
+                    id="checkbox-2"
+                    name="checkbox-2"
+                    v-model="onlyMyProjects"
+                    v-on:input="onChangeFilters"
+            >
+                Show only my projects
+            </b-form-checkbox>
+
 
         </b-col>
         <b-col md="9">
@@ -156,7 +167,6 @@
                 filters: {
                     paymentLowerBound: 0,
                     paymentUpperBound: 0,
-
                     tags: []
                 },
 
@@ -167,6 +177,7 @@
                 itemsPerPage: 20,
 
                 excludedProjects: true,
+                onlyMyProjects: false,
             }
         },
 
@@ -224,6 +235,10 @@
                         .map(tag => tag.name.replace('#', '%23'))
                         .join(',');
                     filtersList.push(`tags:${tagsList}`)
+                }
+
+                if (this.onlyMyProjects) {
+                    filtersList.push(`authorName:${localStorage.username}`);
                 }
 
                 if (filtersList.length > 0) {

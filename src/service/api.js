@@ -26,8 +26,8 @@ export function addProject(data, handler) {
         .catch(err => handler(null, err));
 }
 
-export function getProjects(page, query, handler) {
-    axios.get('/project?page=' + page + query)
+export function getProjects(page, query, sort, handler) {
+    axios.get('/project?page=' + page + query + sort)
         .then(response => handler(response))
         .catch(err => handler(null, err));
 }
@@ -40,6 +40,24 @@ export function getProject(id, handler) {
 
 export function getTagsRequest(handler) {
     axios.get('/tag')
+        .then(response => handler(response))
+        .catch(err => handler(null, err));
+}
+
+export function checkIfApplicationAllowed(project_id, handler) {
+    axios.get(`/project/${project_id}/can_post_application`)
+        .then(response => handler(response))
+        .catch(err => handler(null, err));
+}
+
+export function applyToProject(project_id, data, handler) {
+    axios.post(`/project/${project_id}/application`, data)
+        .then(response => handler(response))
+        .catch(err => handler(null, err));
+}
+
+export function getProjectApplications(project_id, page, handler) {
+    axios.get(`/project/${project_id}/application?page=${page}`)
         .then(response => handler(response))
         .catch(err => handler(null, err));
 }

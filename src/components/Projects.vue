@@ -13,7 +13,7 @@
 
             <hr>
 
-            <h5>Price</h5>
+            <h5>Payment (USD)</h5>
 
             <b-row class="my-1" align-v="center">
                 <b-col sm="2">
@@ -33,6 +33,8 @@
                 </b-col>
             </b-row>
 
+            <hr>
+
             <h5>Tags</h5>
 
             <b-badge
@@ -44,6 +46,18 @@
             >
                 {{tag.name}}
             </b-badge>
+
+            <hr>
+
+            <b-form-checkbox
+                    id="checkbox-1"
+                    name="checkbox-1"
+                    v-model="excludedProjects"
+                    v-on:change="onChangeFilters"
+            >
+                Exclude closed projects
+            </b-form-checkbox>
+
 
         </b-col>
         <b-col md="9">
@@ -58,10 +72,9 @@
                     />
                 </b-col>
                 <b-col md="6" style="text-align: right">
-                    <b-dropdown right variant="light" text="Sort by: id desc">
-                        <b-dropdown-item>Item 1</b-dropdown-item>
-                        <b-dropdown-item>Item 2</b-dropdown-item>
-                        <b-dropdown-item>Item 3</b-dropdown-item>
+                    <b-dropdown right variant="light" v-bind:text="sortText">
+                        <b-dropdown-item v-on:click="onChangeSort('submitted:desc', 'Latest')"><font-awesome-icon icon="check" v-if="sort === 'submitted:desc'" /> Latest</b-dropdown-item>
+                        <b-dropdown-item v-on:click="onChangeSort('submitted:asc', 'Oldest')"><font-awesome-icon icon="check" v-if="sort === 'submitted:asc'" /> Oldest</b-dropdown-item>
                     </b-dropdown>
                 </b-col>
             </b-row>
@@ -109,10 +122,10 @@
                         <template v-slot:footer>
                             <div class="d-flex justify-content-between">
                                 <div>
-                                    Applications until: {{formatTimeStamp(project.endDate)}}
+                                    Applications until: {{formatDateTime(project.endDate)}}
                                 </div>
                                 <div>
-                                    Posted on {{formatTimeStamp(project.submitted)}}, {{project.enrolled}} applicants
+                                    Posted on {{formatDateTime(project.submitted)}}, {{project.enrolled}} applicants
                                 </div>
                             </div>
                         </template>
@@ -125,6 +138,10 @@
 
 <script>
     import { getProjects, getTagsRequest } from "@/service/api";
+
+    import {
+        formatDateTime
+    } from "@/service/utils";
 
     export default {
         name: "Projects",
@@ -141,29 +158,19 @@
                     paymentUpperBound: 0,
 
                     tags: []
-
                 },
 
                 filterQuery: '',
+                sort: 'submitted:desc',
+                sortText: 'Sort by: Latest',
 
                 itemsPerPage: 20,
+
+                excludedProjects: true,
             }
         },
 
         methods: {
-
-            // TODO move this in util
-            formatTimeStamp(timeStamp) {
-                const date = new Date(timeStamp);
-                const year = date.getFullYear();
-                let month = date.getMonth() + 1;
-                month = month < 10 ? `0${month}` : month;
-                let day = date.getDay() + 1;
-                day = day < 10 ? `0${day}` : day;
-
-                return `${year}-${month}-${day}`
-            },
-
             // eslint-disable-next-line vue/no-dupe-keys
             showSpinner() {
                 this.spinner = true;
@@ -176,18 +183,25 @@
             loadProjects() {
                 this.showSpinner();
                 this.currentPage = (typeof this.$route.query.page === 'undefined') ? 1 : parseInt(this.$route.query.page);
-                getProjects(this.currentPage, this.filterQuery, (res, err) => {
+                getProjects(this.currentPage, this.filterQuery, '&sort=' + this.sort, (res, err) => {
                     this.hideSpinner();
                     if (err == null) {
                         this.totalPages = Math.max(1, 1 + Math.floor(res.data.total / this.itemsPerPage));
                         this.projects = res.data.members;
-                        this.setProjects(res.data.members);
                     }
                 });
             },
 
             linkGen(pageNum) {
                 return pageNum === 1 ? '?' : `?page=${pageNum}`
+            },
+
+            onChangeSort(sortValue, text) {
+                // eslint-disable-next-line no-console
+                console.log(sortValue);
+                this.sort = sortValue;
+                this.sortText = `Sort by: ${text}`;
+                this.loadProjects();
             },
 
             onChangeFilters() {
@@ -232,7 +246,9 @@
 
             stripTags(text) {
                 return text.replace(/<\/?[^>]+(>|$)/g, "");
-            }
+            },
+
+            formatDateTime: formatDateTime
         },
 
         mounted() {

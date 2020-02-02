@@ -34,52 +34,53 @@
 
                     <hr>
 
-                    <div class="card my-4">
-                        <h5 class="card-header">Place a Bid on this Project</h5>
-                        <div class="card-body">
-                            <form>
-                                <div class="form-group">
-                                    <textarea placeholder="What makes you the best candidate for this project?" class="form-control" rows="3"></textarea>
+                    <h3>Applications</h3>
+
+                    <div v-if="!isLoggedIn">
+                        <b-alert show="true" variant="dark">You must authenticated in order to post a bid on this project!</b-alert>
+                    </div>
+                    <div v-else>
+                        <div v-if="this.ableToApply">
+                            <div v-if="successfulApplication">
+                                <b-alert show="true" variant="success">Application sent successfully!</b-alert>
+                            </div>
+                            <div v-else>
+                                <div class="card my-4">
+                                <b-alert show="true"  v-if="applicationError" variant="danger">Error processing application!</b-alert>
+                                <h5 class="card-header">Place a Bid on this Project</h5>
+                                <div class="card-body">
+                                    <b-form @submit.prevent="handleProjectApplication">
+                                        <div class="form-group">
+                                            <textarea v-model="applicationDescription" placeholder="What makes you the best candidate for this project?" class="form-control" rows="3"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Submit offer</button>
+                                    </b-form>
                                 </div>
-                                <button type="submit" class="btn btn-primary">Submit offer</button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Single Comment -->
-                    <div class="media mb-4">
-                        <img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" alt="">
-                        <div class="media-body">
-                            <h5 class="mt-0">Commenter Name</h5>
-                            Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.
-                        </div>
-                    </div>
-
-                    <!-- Comment with nested comments -->
-                    <div class="media mb-4">
-                        <img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" alt="">
-                        <div class="media-body">
-                            <h5 class="mt-0">Commenter Name</h5>
-                            Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.
-
-                            <div class="media mt-4">
-                                <img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" alt="">
-                                <div class="media-body">
-                                    <h5 class="mt-0">Commenter Name</h5>
-                                    Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.
                                 </div>
                             </div>
-
-                            <div class="media mt-4">
-                                <img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" alt="">
-                                <div class="media-body">
-                                    <h5 class="mt-0">Commenter Name</h5>
-                                    Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.
-                                </div>
-                            </div>
+                        </div>
+                        <div v-else>
+                            <b-alert show="true" variant="danger">{{notAbleToApplyReason}}</b-alert>
 
                         </div>
                     </div>
+
+            <b-pagination-nav
+                    :link-gen="linkGen"
+                    :number-of-pages="totalPages"
+                    v-on:input="loadApplications"
+                    use-router
+                    style="margin-bottom: 40px;"
+            />
+
+            <div class="media mb-4" v-for="application in applications" :key="application.id" style="margin-top: -20px;">
+                <img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" alt="">
+                <div class="media-body">
+                    <h5 class="mt-0">{{application.user.username}}, <span style="font-size: 13px; color: #444;">submitted on {{new Date(application.date) | dateFormat('DD MMM YYYY')}}</span></h5>
+                    <div v-html="application.description"></div>
+                    <hr>
+                </div>
+            </div>
 
         </div>
     </div>
@@ -88,8 +89,15 @@
 <script>
 
     import {
-        getProject
+        getProject,
+        checkIfApplicationAllowed,
+        applyToProject,
+        getProjectApplications
     } from "@/service/api";
+
+    import {
+        isLoggedIn
+    } from "@/service/utils";
 
     import {
         // eslint-disable-next-line no-unused-vars
@@ -102,8 +110,22 @@
         data() {
             return {
                 projectDetails: null,
+                applicationDescription: '',
 
-                spinner: true
+                spinner: true,
+
+                ableToApply: true,
+                notAbleToApplyReason: '',
+
+                applicationError: false,
+                successfulApplication: false,
+
+                applications: [],
+                totalPages: 1,
+                currentPage: 1,
+                itemsPerPage: 20,
+
+                isLoggedIn: isLoggedIn()
             }
         },
 
@@ -124,11 +146,53 @@
                         this.projectDetails = res.data;
                     }
                 });
+
+                checkIfApplicationAllowed(this.$route.params.project_id, (res, err) => {
+                    if (err != null) {
+                        this.ableToApply = false;
+                        this.notAbleToApplyReason = err.response.data.message;
+                    } else {
+                        this.ableToApply = true;
+                        this.notAbleToApplyReason = '';
+                    }
+                });
+            },
+
+            linkGen(pageNum) {
+                return pageNum === 1 ? '?' : `?page=${pageNum}`
+            },
+
+            loadApplications() {
+                this.currentPage = (typeof this.$route.query.page === 'undefined') ? 1 : parseInt(this.$route.query.page);
+
+                getProjectApplications(this.$route.params.project_id, this.currentPage, (res, err) => {
+                    if (err == null) {
+                        this.totalPages = Math.max(1, 1 + Math.floor(res.data.total / this.itemsPerPage));
+                        this.applications = res.data.members;
+                    }
+                });
+            },
+
+            handleProjectApplication() {
+                this.applicationError = false;
+                this.successfulApplication = false;
+
+                applyToProject(this.$route.params.project_id, {
+                    description: this.applicationDescription
+                }, (_, err) => {
+                    if (err == null) {
+                        this.successfulApplication = true;
+                        this.loadApplications();
+                    } else {
+                        this.applicationError = true;
+                    }
+                });
             }
         },
 
         created() {
-            this.loadProject()
+            this.loadProject();
+            this.loadApplications();
         }
     }
 </script>

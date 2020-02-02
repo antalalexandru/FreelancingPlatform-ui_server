@@ -70,6 +70,7 @@
                         localStorage.refreshToken = res.data['refresh_token'];
                         localStorage.expirationDate = new Date().getTime() + 1000 * res.data['expires_in'];
                         localStorage.username = this.username;
+                        localStorage.userId = res.data['user_id'];
 
                         document.location.href = '/';
                     } else {

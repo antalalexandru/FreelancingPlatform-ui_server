@@ -8,6 +8,8 @@ import AddProject from "@/components/AddProject";
 import Projects from "@/components/Projects";
 import ProjectDetails from "@/components/ProjectDetails";
 import AccountActivation from "@/components/AccountActivation";
+import AccountReset from "../components/AccountReset";
+import ForgotPassword from "../components/ForgotPassword";
 
 Vue.use(Router);
 
@@ -49,6 +51,16 @@ export default new Router({
             path: '/activate_account',
             name: 'activate_account',
             component: AccountActivation
+        },
+        {
+            path: '/reset_account',
+            name: 'reset_account',
+            component: AccountReset
+        },
+        {
+            path: '/forgot_password',
+            name: 'forgot_password',
+            component: ForgotPassword
         }
 
     ]

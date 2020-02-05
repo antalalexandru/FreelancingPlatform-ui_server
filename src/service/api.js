@@ -20,6 +20,12 @@ export function activateAccountRequest(data, handler) {
         .catch(err => handler(null, err));
 }
 
+export function resetAccountRequest(data, handler) {
+    axios.post('/user/reset', data)
+        .then(response => handler(response))
+        .catch(err => handler(null, err));
+}
+
 export function addProject(data, handler) {
     axios.post('/project', data)
         .then(response => handler(response))
@@ -34,6 +40,12 @@ export function getProjects(page, query, sort, handler) {
 
 export function getProject(id, handler) {
     axios.get('/project/' + id)
+        .then(response => handler(response))
+        .catch(err => handler(null, err));
+}
+
+export function forgotPassword(id, handler) {
+    axios.get('/user/forgotPassword?keyword=' + id)
         .then(response => handler(response))
         .catch(err => handler(null, err));
 }

@@ -37,6 +37,8 @@
 
 
             <b-button type="submit" variant="secondary">Submit</b-button>
+<br><br>
+            If you forgot your password, click <router-link to="/forgot_password"> here</router-link>
         </b-form>
 
     </div>

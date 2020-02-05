@@ -17,15 +17,24 @@
             <b-button variant="primary" href="#">Do Something</b-button>&nbsp;
             <b-button variant="success" href="#">Do Something Else</b-button>
         </b-jumbotron>
+
+        <line-chart
+                :chartdata="chartdata"
+                :options="options"/>
+
     </div>
 </template>
 
 <script>
+    import LineChart from 'vue-chartjs'
+
     export default {
         name: "BoardIndex",
-
+        components: { LineChart },
         data: () => {
             return {
+                loaded: false,
+                chartdata: {a: 2, b: '3'},
                 isLoggedIn: localStorage.username && JSON.parse(localStorage.username) != null,
             }
         },

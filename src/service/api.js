@@ -73,3 +73,33 @@ export function getProjectApplications(project_id, page, handler) {
         .then(response => handler(response))
         .catch(err => handler(null, err));
 }
+
+export function getUsersCount(handler) {
+    axios.get(`/statistics/users`)
+    .then(response => handler(response))
+    .catch(err => handler(null, err));
+}
+
+export function getProjectsCount(handler) {
+    axios.get(`/statistics/projects`)
+    .then(response => handler(response))
+    .catch(err => handler(null, err));
+}
+
+export function getTagsStatistics(handler) {
+    axios.get(`/statistics/tags`)
+    .then(response => handler(response))
+    .catch(err => handler(null, err));
+}
+
+export function selectApplication(project_id, application_id, handler) {
+    axios.post(`/project/${project_id}/select_application/${application_id}`)
+    .then(response => handler(response))
+    .catch(err => handler(null, err));
+}
+
+export function deleteProject(project_id, handler) {
+    axios.delete(`/project/${project_id}`)
+    .then(response => handler(response))
+    .catch(err => handler(null, err));
+}

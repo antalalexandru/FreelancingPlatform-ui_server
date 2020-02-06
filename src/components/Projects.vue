@@ -2,8 +2,7 @@
 
     <b-row style="margin-top: 20px">
         <b-col md="3">
-            <!-- TODO hide button if not logged in -->
-            <b-button style="width: 100%; margin-bottom: 10px;" to="/add_project">
+            <b-button v-if="isLoggedIn" style="width: 100%; margin-bottom: 10px;" to="/add_project">
                 Add new project
             </b-button>
 
@@ -50,21 +49,11 @@
             <hr>
 
             <b-form-checkbox
-                    id="checkbox-1"
-                    name="checkbox-1"
-                    v-model="excludedProjects"
-                    v-on:change="onChangeFilters"
-            >
-                Exclude closed projects
-            </b-form-checkbox>
-
-            <hr>
-
-            <b-form-checkbox
                     id="checkbox-2"
                     name="checkbox-2"
                     v-model="onlyMyProjects"
                     v-on:input="onChangeFilters"
+                    v-if="isLoggedIn"
             >
                 Show only my projects
             </b-form-checkbox>
@@ -178,6 +167,8 @@
 
                 excludedProjects: true,
                 onlyMyProjects: false,
+
+                isLoggedIn: typeof localStorage.username !== "undefined",
             }
         },
 

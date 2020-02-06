@@ -16,8 +16,13 @@
 
                     <!-- Date/Time https://www.npmjs.com/package/vue-filter-date-format -->
                     <p>
-                        Posted on {{ new Date(projectDetails.submitted) | dateFormat('DD MMMM YYYY') }}, registrations open until {{ new Date(projectDetails.endDate) | dateFormat('DD MMMM YYYY') }}</p>
-                    <hr>
+                        Posted on {{ new Date(projectDetails.submitted) | dateFormat('DD MMMM YYYY') }}, registrations open until {{ new Date(projectDetails.endDate) | dateFormat('DD MMMM YYYY') }}
+                    </p>
+                    <div v-if="isLoggedIn && loggedInUserInfo.roles === 'ROLE_ADMIN'">
+                        <b-button variant="danger" v-on:click="handleDeleteProject">Delete this project</b-button>
+                    </div>
+
+            <hr>
 
                     <div v-html="projectDetails.description"></div>
 
@@ -37,7 +42,7 @@
                     <h3>Applications</h3>
 
                     <div v-if="!isLoggedIn">
-                        <b-alert show="true" variant="dark">You must authenticated in order to post a bid on this project!</b-alert>
+                        <b-alert show="true" variant="dark">You must authenticate in order to post a bid on this project!</b-alert>
                     </div>
                     <div v-else>
                         <div v-if="this.ableToApply">
@@ -76,7 +81,7 @@
             <div class="media mb-4" v-for="application in applications" :key="application.id" style="margin-top: -20px;">
                 <img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" alt="">
                 <div class="media-body">
-                    <h5 class="mt-0">{{application.user.username}}, <span style="font-size: 13px; color: #444;">submitted on {{new Date(application.date) | dateFormat('DD MMM YYYY')}}</span></h5>
+                    <h5 class="mt-0">{{application.user.username}}, <span style="font-size: 13px; color: #444;">submitted on {{new Date(application.date) | dateFormat('DD MMM YYYY')}}</span> <span class="badge badge-light" style="cursor: pointer" v-on:click="handleSelectApplication(application.id)" v-if="projectDetails.selectedApplication == null && projectDetails.author.id == loggedInUserInfo.id && new Date(projectDetails.endDate) < new Date()">Selected this application</span> <span class="badge badge-success" v-if="projectDetails.selectedApplication != null && projectDetails.selectedApplication.id === application.id">Selected application</span></h5>
                     <div v-html="application.description"></div>
                     <hr>
                 </div>
@@ -92,11 +97,14 @@
         getProject,
         checkIfApplicationAllowed,
         applyToProject,
-        getProjectApplications
+        getProjectApplications,
+        selectApplication,
+        deleteProject
     } from "@/service/api";
 
     import {
-        isLoggedIn
+        isLoggedIn,
+        getLoggedInUserInfo
     } from "@/service/utils";
 
     import {
@@ -125,7 +133,8 @@
                 currentPage: 1,
                 itemsPerPage: 20,
 
-                isLoggedIn: isLoggedIn()
+                isLoggedIn: isLoggedIn(),
+                loggedInUserInfo: getLoggedInUserInfo(),
             }
         },
 
@@ -163,6 +172,7 @@
             },
 
             loadApplications() {
+                this.applications = [];
                 this.currentPage = (typeof this.$route.query.page === 'undefined') ? 1 : parseInt(this.$route.query.page);
 
                 getProjectApplications(this.$route.params.project_id, this.currentPage, (res, err) => {
@@ -185,6 +195,23 @@
                         this.loadApplications();
                     } else {
                         this.applicationError = true;
+                    }
+                });
+            },
+
+            handleSelectApplication(applicationId) {
+                selectApplication(this.$route.params.project_id, applicationId, (res, err) => {
+                    if (err == null) {
+                        this.projectDetails.selectedApplication = res.data.selectedApplication;
+                        this.loadApplications();
+                    }
+                });
+            },
+
+            handleDeleteProject() {
+                deleteProject(this.$route.params.project_id, (_, err) => {
+                    if (err == null) {
+                        this.$router.push('/projects');
                     }
                 });
             }

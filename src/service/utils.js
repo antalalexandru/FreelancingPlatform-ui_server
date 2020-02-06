@@ -15,6 +15,7 @@ export function isLoggedIn() {
 export function getLoggedInUserInfo() {
     return {
         id: localStorage.userId,
-        username: localStorage.username
+        username: localStorage.username,
+        roles: localStorage.roles
     }
 }
